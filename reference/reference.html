@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DesignAI - Turn Text Briefs into Production-Ready UI in Seconds</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="AI-powered UI generator for startups. Generate stunning UI screens, export to Figma, and accelerate your product design workflow instantly. Free plan available.">
+    <meta property="og:title" content="DesignAI - AI UI Generator for Startups">
+    <meta property="og:description"
+        content="Turn text briefs into production-ready UI in seconds. Join 12,000+ founders shipping faster.">
+    <meta property="og:image" content="https://placehold.co/1200x630/18181B/FAFAFA?text=DesignAI+Hero">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        canvas: '#09090B',
+                        surface: '#18181B',
+                        brandPrimary: '#4F46E5',
+                        brandAccent: '#4F46E5', // Will be dynamic in Concept B
+                        textPrimary: '#FAFAFA',
+                        textSecondary: '#A1A1AA',
+                        borderCustom: '#27272A',
+                        successState: '#10B981',
+                        errorState: '#EF4444',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&family=Space+Grotesk:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS Styling for Accordion and Sandbox Elements -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #09090B;
+            color: #FAFAFA;
+        }
+
+        .heading-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .editorial-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Custom Accordion height transition */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+
+        .accordion-active .accordion-content {
+            max-height: 200px;
+            opacity: 1;
+        }
+
+        /* Seamless Custom Grids for Concept B */
+        .cyber-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
+        }
+
+        /* Shake Animation for Input Validation */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-10px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(10px);
+            }
+        }
+
+        .shake-element {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Glow Effect for Concept B */
+        .radial-glow {
+            background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.15) 0%, transparent 60%);
+        }
+    </style>
+</head>
+
+<body class="overflow-x-hidden min-h-screen selection:bg-indigo-600 selection:text-white">
+
+    <!-- Concept Swapper Controls floating widget -->
+    <div
+        class="fixed bottom-6 right-6 z-50 bg-neutral-900/95 border-2 border-[#4F46E5] text-white p-4 rounded-2xl shadow-2xl max-w-sm backdrop-blur-lg transition-transform duration-300 transform hover:scale-[1.02]">
+        <div class="flex items-center justify-between mb-3 border-b border-neutral-800 pb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-neutral-400">⚡ Interactive Concepts</span>
+            <span class="px-2 py-0.5 text-[10px] font-semibold bg-indigo-900/50 text-indigo-300 rounded-full">Explore 2
+                Ideas</span>
+        </div>
+        <p class="text-xs text-neutral-300 mb-4 leading-relaxed">
+            The PRD defines the core aesthetic. Below, you can toggle between <strong>Concept A</strong> (Minimal Clean)
+            and <strong>Concept B</strong> (Vibrant Sandbox) which activates a live accent slider & interactive
+            background.
+        </p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+            <button id="btnConceptA" onclick="setConcept('A')"
+                class="text-xs py-2 px-3 rounded-lg font-medium border border-indigo-500 bg-indigo-600 text-white transition-all duration-200">
+                A: Minimal Tech
+            </button>
+            <button id="btnConceptB" onclick="setConcept('B')"
+                class="text-xs py-2 px-3 rounded-lg font-medium border border-neutral-800 bg-neutral-800 text-neutral-300 hover:text-white transition-all duration-200">
+                B: Vibrant Sandbox
+            </button>
+        </div>
+        <!-- Concept B Controls -->
+        <div id="sandboxControls" class="hidden space-y-3 pt-2 border-t border-neutral-800 animate-fadeIn">
+            <div>
+                <label class="block text-[11px] text-neutral-400 mb-1 flex justify-between">
+                    <span>Accent Theme Color:</span>
+                    <span id="accentVal" class="text-indigo-400">Indigo</span>
+                </label>
+                <input id="accentSlider" type="range" min="1" max="4" value="1" oninput="changeAccent(this.value)"
+                    class="w-full accent-indigo-500 cursor-pointer">
+            </div>
+            <div>
+                <label class="block text-[11px] text-neutral-400 mb-1 flex justify-between">
+                    <span>Border Smoothness:</span>
+                    <span id="radiusVal" class="text-indigo-400">16px</span>
+                </label>
+                <input id="radiusSlider" type="range" min="0" max="24" value="16" oninput="changeRadius(this.value)"
+                    class="w-full accent-indigo-500 cursor-pointer">
+            </div>
+        </div>
+    </div>
+
+    <!-- [Section 1] Header Navigation -->
+    <header id="header-nav"
+        class="fixed top-0 left-0 right-0 z-40 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Left: Logo -->
+            <a href="#" class="flex items-center space-x-2 text-xl font-bold tracking-tight text-zinc-50 heading-font">
+                <span class="text-indigo-500 font-extrabold text-2xl">⚡</span>
+                <span id="logo-text">Design<span class="text-indigo-500">AI</span></span>
+            </a>
+
+            <!-- Center: Navigation Links -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-zinc-400">
+                <a href="#features" class="hover:text-zinc-50 transition-colors duration-150">Features</a>
+                <a href="#how-it-works" class="hover:text-zinc-50 transition-colors duration-150">How It Works</a>
+                <a href="#pricing" class="hover:text-zinc-50 transition-colors duration-150">Pricing</a>
+                <a href="#faq" class="hover:text-zinc-50 transition-colors duration-150">FAQ</a>
+            </nav>
+
+            <!-- Right: Action CTAs -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#pricing"
+                    class="text-sm font-medium text-zinc-400 hover:text-zinc-50 px-3 py-2 transition-colors duration-150">Sign
+                    In</a>
+                <a href="#pricing"
+                    class="dynamic-button-radius inline-flex items-center justify-center text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all duration-150">
+                    Start Free
+                </a>
+            </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button onclick="toggleMobileMenu()"
+                class="md:hidden flex items-center text-zinc-400 hover:text-zinc-100 focus:outline-none"
+                aria-label="Toggle Menu">
+                <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobile-menu"
+            class="hidden md:hidden absolute top-20 left-0 w-full bg-zinc-950 border-b border-zinc-800 p-6 space-y-4 animate-slideDown">
+            <nav class="flex flex-col space-y-4 text-zinc-400 font-medium text-base">
+                <a href="#features" onclick="toggleMobileMenu()"
+                    class="hover:text-zinc-50 transition-colors duration-150">Features</a>
+                <a href="#how-it-works" onclick="toggleMobileMenu()"
+                    class="hover:text-zinc-50 transition-colors duration-150">How It Works</a>
+                <a href="#pricing" onclick="toggleMobileMenu()"
+                    class="hover:text-zinc-50 transition-colors duration-150">Pricing</a>
+                <a href="#faq" onclick="toggleMobileMenu()"
+                    class="hover:text-zinc-50 transition-colors duration-150">FAQ</a>
+            </nav>
+            <div class="pt-4 border-t border-zinc-800 flex flex-col space-y-3">
+                <a href="#pricing" onclick="toggleMobileMenu()"
+                    class="text-center text-zinc-400 hover:text-zinc-50 py-2">Sign In</a>
+                <a href="#pricing" onclick="toggleMobileMenu()"
+                    class="dynamic-button-radius text-center block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 transition-colors duration-150">
+                    Start Free
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- [Section 2] Hero Section -->
+    <main class="relative pt-32 lg:pt-40 overflow-hidden" id="hero">
+        <!-- Interactive Background Grid Dynamic Block -->
+        <div id="hero-background-grid" class="absolute inset-0 z-0 pointer-events-none opacity-40"></div>
+        <div class="absolute inset-0 z-0 radial-glow pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10 text-center flex flex-col items-center">
+            <!-- Tagline -->
+            <span
+                class="editorial-font text-indigo-400 text-lg sm:text-xl lg:text-2xl italic font-normal tracking-wide block mb-4 animate-fadeIn">
+                "The end of the blank canvas."
+            </span>
+
+            <!-- Main Headline -->
+            <h1
+                class="heading-font text-zinc-50 text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight max-w-4xl leading-[1.1] mb-6 animate-fadeIn">
+                Go from Text Brief to <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-indigo-200 to-indigo-500">Production-Ready
+                    UI</span> in Seconds.
+            </h1>
+
+            <!-- Sub-headline -->
+            <p class="text-zinc-400 text-base sm:text-lg lg:text-xl max-w-2xl leading-relaxed mb-10">
+                Generate stunning UI screens, export cleanly structured Figma files, and kickstart your startup's
+                product design workflow instantly.
+            </p>
+
+            <!-- Prompt Interactive Input Bar Container -->
+            <div id="prompt-container"
+                class="w-full max-w-3xl dynamic-card-radius bg-zinc-900/90 border border-zinc-800 p-2 sm:p-3 shadow-2xl focus-within:border-indigo-500 focus-within:shadow-[0_0_24px_rgba(79,70,229,0.25)] transition-all duration-300 mb-6 relative">
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="flex-1 relative flex items-center">
+                        <span class="pl-3 text-indigo-500 font-bold select-none text-xl">✨</span>
+                        <input id="prompt-input" type="text" maxlength="500"
+                            placeholder="A dark minimalist dashboard for a SaaS analytics startup with real-time graphs..."
+                            class="w-full bg-transparent pl-2 pr-4 py-3 text-zinc-100 placeholder-zinc-500 text-sm sm:text-base focus:outline-none"
+                            oninput="updatePromptCharLimit()">
+                    </div>
+                    <button id="generate-btn" onclick="triggerSimulatedGeneration()"
+                        class="dynamic-button-radius bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-3 shadow-lg shadow-indigo-600/35 hover:shadow-indigo-600/50 hover:scale-[1.01] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2">
+                        <span>Generate UI ✨</span>
+                    </button>
+                </div>
+                <!-- Dynamic Character Limit Counter and Status Messages -->
+                <div class="flex justify-between items-center mt-2 px-3 text-xs text-zinc-500">
+                    <span id="char-counter">0 / 500 characters</span>
+                    <span id="prompt-validation-feedback" class="text-errorState font-semibold"></span>
+                </div>
+            </div>
+
+            <!-- Sub-CTA Launcher Button -->
+            <a href="#pricing"
+                class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-2 py-2 mb-16 hover:underline">
+                Launch App — Free <span class="transition-transform duration-150 hover:translate-x-1">→</span>
+            </a>
+
+            <!-- Simulated Generative Result Workspace Block -->
+            <div id="generation-loader"
+                class="hidden w-full max-w-4xl dynamic-card-radius bg-zinc-900 border border-zinc-800 p-12 mb-20 shadow-2xl flex flex-col items-center justify-center gap-4">
+                <div class="relative w-16 h-16">
+                    <div class="absolute inset-0 rounded-full border-4 border-zinc-800"></div>
+                    <div
+                        class="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin">
+                    </div>
+                </div>
+                <h3 id="generation-stage-text" class="heading-font text-zinc-100 text-lg font-semibold animate-pulse">
+                    Analyzing your brief...</h3>
+                <p class="text-zinc-500 text-sm">DesignAI is synthesising layout tokens, wireframe layers, and
+                    components.</p>
+            </div>
+
+            <!-- Dynamic UI Showcase Card (Mock Generated Result) -->
+            <div id="generation-result"
+                class="hidden w-full max-w-4xl dynamic-card-radius bg-zinc-900 border border-zinc-800 p-4 sm:p-6 mb-20 shadow-2xl relative animate-fadeIn">
+                <!-- Sparkle Success Banner -->
+                <div
+                    class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-black text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                    <span>✨ UI Generation Success!</span>
+                </div>
+
+                <!-- Mockup Controls Bar -->
+                <div
+                    class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-zinc-800 pb-4 mb-6 gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full bg-zinc-800"></span>
+                        <h4 id="result-dashboard-title" class="heading-font text-zinc-100 font-semibold text-base">Your
+                            Minimalist Analytics Dashboard</h4>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Toggle Wireframe / Styled Mode -->
+                        <div class="bg-zinc-950 p-1 rounded-lg border border-zinc-800 flex text-xs">
+                            <button onclick="setPreviewStyle('wireframe')" id="btn-preview-wireframe"
+                                class="px-3 py-1.5 rounded-md font-medium text-zinc-400 hover:text-zinc-50 transition-colors">Wireframe</button>
+                            <button onclick="setPreviewStyle('styled')" id="btn-preview-styled"
+                                class="px-3 py-1.5 rounded-md font-medium bg-indigo-600 text-white shadow">Styled
+                                UI</button>
+                        </div>
+                        <!-- Download/Export Controls -->
+                        <button onclick="mockFigmaExport()"
+                            class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-50 text-xs font-bold rounded-lg transition-colors border border-zinc-700">Export
+                            to Figma</button>
+                        <button onclick="resetGenerationPrompt()"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors">Try
+                            Another</button>
+                    </div>
+                </div>
+
+                <!-- Live Generated Canvas (Visual UI Representation) -->
+                <div id="mock-canvas-container"
+                    class="relative w-full aspect-[16/10] bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800/80 p-4 sm:p-6">
+                    <!-- High Fidelity Render -->
+                    <div id="mockup-styled"
+                        class="w-full h-full flex flex-col justify-between transition-all duration-300">
+                        <!-- Simulated Topbar -->
+                        <div class="flex items-center justify-between border-b border-zinc-800/60 pb-3 mb-4">
+                            <div class="flex items-center gap-4">
+                                <span class="text-zinc-300 font-bold text-xs flex items-center gap-1">🌐 ApexSaaS</span>
+                                <span
+                                    class="bg-indigo-500/10 text-indigo-400 text-[10px] px-2 py-0.5 rounded font-mono">v1.2</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-16 h-3 bg-zinc-800 rounded"></div>
+                                <div class="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40"></div>
+                            </div>
+                        </div>
+                        <!-- Simulated Grid Cards -->
+                        <div class="grid grid-cols-3 gap-3 mb-4 flex-1">
+                            <div
+                                class="col-span-2 bg-zinc-900 border border-zinc-800 p-3 sm:p-4 rounded-lg flex flex-col justify-between">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-zinc-400 text-xs font-medium">Monthly Active Users</span>
+                                    <span
+                                        class="text-emerald-400 text-[10px] font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">+18.2%</span>
+                                </div>
+                                <div class="text-lg sm:text-2xl font-bold tracking-tight text-zinc-50">142,580</div>
+                                <div class="w-full h-12 flex items-end gap-1 pt-2">
+                                    <!-- Mini SVG Chart representation -->
+                                    <div
+                                        class="w-1/6 bg-indigo-600/30 rounded-t h-4 hover:bg-indigo-600 transition-all">
+                                    </div>
+                                    <div
+                                        class="w-1/6 bg-indigo-600/30 rounded-t h-8 hover:bg-indigo-600 transition-all">
+                                    </div>
+                                    <div
+                                        class="w-1/6 bg-indigo-600/30 rounded-t h-6 hover:bg-indigo-600 transition-all">
+                                    </div>
+                                    <div
+                                        class="w-1/6 bg-indigo-600/50 rounded-t h-10 hover:bg-indigo-600 transition-all">
+                                    </div>
+                                    <div
+                                        class="w-1/6 bg-indigo-600/50 rounded-t h-7 hover:bg-indigo-600 transition-all">
+                                    </div>
+                                    <div class="w-1/6 bg-indigo-600 rounded-t h-12 hover:bg-indigo-500 transition-all">
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-zinc-900 border border-zinc-800 p-3 sm:p-4 rounded-lg flex flex-col justify-between">
+                                <span class="text-zinc-400 text-xs font-medium">Conversion Rate</span>
+                                <div class="text-lg sm:text-2xl font-bold tracking-tight text-zinc-50">12.4%</div>
+                                <div class="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-indigo-500 h-full w-2/3 rounded-full"></div>
+                                </div>
+                                <span class="text-zinc-500 text-[9px] leading-tight">Optimized using AI assets</span>
+                            </div>
+                        </div>
+                        <!-- Bottom Action items -->
+                        <div class="flex items-center justify-between text-[11px] text-zinc-500">
+                            <span>⚡ Live-updating from Stripe API</span>
+                            <span>Powered by DesignAI Generation Layout</span>
+                        </div>
+                    </div>
+
+                    <!-- Low Fidelity Wireframe Render -->
+                    <div id="mockup-wireframe"
+                        class="hidden w-full h-full flex flex-col justify-between transition-all duration-300">
+                        <!-- Wireframe Topbar -->
+                        <div class="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-24 h-4 bg-zinc-800 rounded"></div>
+                                <div class="w-12 h-4 bg-zinc-800 rounded"></div>
+                            </div>
+                            <div class="w-6 h-6 rounded-full bg-zinc-800"></div>
+                        </div>
+                        <!-- Wireframe Grid Cards -->
+                        <div class="grid grid-cols-3 gap-3 mb-4 flex-1">
+                            <div
+                                class="col-span-2 bg-zinc-900 border-2 border-dashed border-zinc-800 p-3 sm:p-4 rounded-lg flex flex-col justify-between">
+                                <div class="w-1/3 h-3 bg-zinc-800 rounded mb-2"></div>
+                                <div class="w-1/2 h-8 bg-zinc-800 rounded"></div>
+                                <div class="w-full border-b border-dashed border-zinc-800/80 pt-2"></div>
+                            </div>
+                            <div
+                                class="bg-zinc-900 border-2 border-dashed border-zinc-800 p-3 sm:p-4 rounded-lg flex flex-col justify-between">
+                                <div class="w-1/2 h-3 bg-zinc-800 rounded"></div>
+                                <div class="w-1/3 h-6 bg-zinc-800 rounded"></div>
+                                <div class="w-full h-2 bg-zinc-800 rounded"></div>
+                            </div>
+                        </div>
+                        <!-- Wireframe footer -->
+                        <div class="flex justify-between">
+                            <div class="w-24 h-2 bg-zinc-800 rounded"></div>
+                            <div class="w-20 h-2 bg-zinc-800 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- [Section 3] Social Proof -->
+    <section class="border-y border-zinc-800/80 bg-zinc-950/40 py-12 relative z-10" id="social-proof">
+        <div class="max-w-7xl mx-auto px-6">
+            <!-- Label -->
+            <p class="text-center text-xs font-bold text-zinc-500 uppercase tracking-[0.2em] mb-8">
+                TRUSTED BY FOUNDERS AT
+            </p>
+
+            <!-- Logo Grid -->
+            <div
+                class="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-40 hover:opacity-70 transition-opacity duration-300 mb-12">
+                <span class="text-lg font-bold tracking-widest text-zinc-300 font-mono">Y COMBINATOR</span>
+                <span class="text-lg font-bold tracking-wider text-zinc-300 font-mono">PRODUCT HUNT</span>
+                <span class="text-lg font-bold tracking-tight text-zinc-300 font-mono">TECHSTARS</span>
+                <span class="text-lg font-bold tracking-widest text-zinc-300 font-mono">SEEDED.CO</span>
+            </div>
+
+            <!-- Key Metrics 3-Column Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-zinc-800/60 text-center">
+                <div class="flex flex-col items-center">
+                    <span class="heading-font text-3xl sm:text-4xl font-bold text-zinc-50 mb-2">500k+</span>
+                    <span class="text-zinc-400 text-sm">UI Screens Generated</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="heading-font text-3xl sm:text-4xl font-bold text-zinc-50 mb-2">12,000+</span>
+                    <span class="text-zinc-400 text-sm">Startup Founders Active</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="heading-font text-3xl sm:text-4xl font-bold text-zinc-50 mb-2">99.8%</span>
+                    <span class="text-zinc-400 text-sm">Dev-Ready Code Match</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- [Section 4] "How It Works" Section -->
+    <section class="py-24 relative z-10" id="how-it-works">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="heading-font text-3xl sm:text-4xl font-bold text-zinc-50 tracking-tight mb-4">
+                    How It Works
+                </h2>
+                <p class="text-zinc-400">
+                    Bypass traditional design agency bottlenecks and render deployable UI layers in three high-speed
+                    phases.
+                </p>
+            </div>
+
+            <!-- Progressive Steps Layout -->
+            <div class="relative grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-8 items-start">
+
+                <!-- Connector Dotted Line (Desktop only) -->
+                <div
+                    class="hidden lg:block absolute top-[44px] left-[15%] right-[15%] h-[2px] border-t-2 border-dashed border-zinc-800 z-0">
+                </div>
+
+                <!-- Step 1 -->
+                <div onclick="selectStepVisual(1)"
+                    class="group cursor-pointer flex flex-col items-center text-center relative z-10 p-4 rounded-xl hover:bg-zinc-900/40 transition-colors duration-200">
+                    <!-- Circle Badge -->
+                    <div id="step-badge-1"
+                        class="w-16 h-16 rounded-full bg-indigo-600 border border-indigo-400 flex items-center justify-center heading-font font-bold text-zinc-50 text-xl shadow-lg shadow-indigo-600/30 transition-all duration-300">
+                        1
+                    </div>
+                    <h3 class="heading-font text-lg sm:text-xl font-semibold text-zinc-50 mt-6 mb-3">Prompt & Ideate
+                    </h3>
+                    <p class="text-zinc-400 text-sm sm:text-base mb-6 max-w-xs">
+                        Feed your raw client design brief or product outline directly into the AI prompt generator.
+                    </p>
+                    <!-- Visual Mockup Placeholder -->
+                    <div id="visual-mockup-1"
+                        class="w-full aspect-[4/3] bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden relative shadow-inner p-4 flex flex-col justify-center">
+                        <div class="bg-zinc-950 p-3 rounded border border-zinc-800 text-left space-y-2">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-mono text-zinc-500">PROMPT WORKSPACE</span>
+                                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                            </div>
+                            <p class="text-xs text-zinc-300 leading-normal font-mono">"A landing page hero header for an
+                                AI micro-SaaS showing dynamic widgets."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div onclick="selectStepVisual(2)"
+                    class="group cursor-pointer flex flex-col items-center text-center relative z-10 p-4 rounded-xl hover:bg-zinc-900/40 transition-colors duration-200">
+                    <!-- Circle Badge -->
+                    <div id="step-badge-2"
+                        class="w-16 h-16 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center heading-font font-bold text-zinc-300 text-xl shadow-lg transition-all duration-300">
+                        2
+                    </div>
+                    <h3 class="heading-font text-lg sm:text-xl font-semibold text-zinc-50 mt-6 mb-3">Refine Wireframes
+                    </h3>
+                    <p class="text-zinc-400 text-sm sm:text-base mb-6 max-w-xs">
+                        Review AI-rendered layout options, swap wireframe states, and choose dynamic design system
+                        variables.
+                    </p>
+                    <!-- Visual Mockup Placeholder -->
+                    <div id="visual-mockup-2"
+                        class="w-full aspect-[4/3] bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden relative shadow-inner p-4 flex flex-col justify-center">
+                        <div class="space-y-2 text-left">
+                            <div class="flex justify-between text-[10px] text-zinc-500 font-bold">
+                                <span>WIREFRAME ENGINE</span>
+                                <span>ACTIVE LAYOUT</span>
+                            </div>
+                            <div
+                                class="border border-dashed border-zinc-700 p-2 rounded flex justify-between items-center bg-zinc-950/40">
+                                <div class="w-2/3 h-3 bg-zinc-800 rounded"></div>
+                                <div
+                                    class="w-6 h-6 rounded-md bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-xs">
+                                    ✓</div>
+                            </div>
+                            <div
+                                class="border border-dashed border-zinc-700 p-2 rounded flex justify-between items-center bg-zinc-950/40">
+                                <div class="w-1/2 h-3 bg-zinc-800 rounded"></div>
+                                <div class="w-6 h-3 bg-zinc-800 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div onclick="selectStepVisual(3)"
+                    class="group cursor-pointer flex flex-col items-center text-center relative z-10 p-4 rounded-xl hover:bg-zinc-900/40 transition-colors duration-200">
+                    <!-- Circle Badge -->
+                    <div id="step-badge-3"
+                        class="w-16 h-16 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center heading-font font-bold text-zinc-300 text-xl shadow-lg transition-all duration-300">
+                        3
+                    </div>
+                    <h3 class="heading-font text-lg sm:text-xl font-semibold text-zinc-50 mt-6 mb-3">Export & Build</h3>
+                    <p class="text-zinc-400 text-sm sm:text-base mb-6 max-w-xs">
+                        Move assets seamlessly to Figma or generate production-ready code blocks to deploy.
+                    </p>
+                    <!-- Visual Mockup Placeholder -->
+                    <div id="visual-mockup-3"
+                        class="w-full aspect-[4/3] bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden relative shadow-inner p-4 flex flex-col justify-center">
+                        <div class="flex flex-col gap-2">
+                            <div
+                                class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded text-xs text-center shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5">
+                                <span class="text-xs">❖</span> Export Figma Files
+                            </div>
+                            <div
+                                class="bg-zinc-950 text-emerald-400 font-mono text-[10px] p-2 rounded border border-zinc-800 text-left overflow-hidden">
+                                <code>&lt;div class="grid grid-cols-1 md:grid-cols-3"&gt;...&lt;/div&gt;</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- [Section 5] Core Features Grid -->
+    <section class="py-24 bg-zinc-950/30 relative z-10" id="features">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="heading-font text-3xl sm:text-4xl font-bold text-zinc-50 tracking-tight mb-4">
+                    Core Design Capabilities
+                </h2>
+                <p class="text-zinc-400">
+                    Engineered precisely to deliver maximum customizability, clean layer outputs, and developer handoff
+                    agility.
+                </p>
+            </div>
+
+            <!-- 2x2 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+
+                <!-- Card A -->
+                <div
+                    class="dynamic-card-radius bg-zinc-900 border border-zinc-800 p-8 min-h-[280px] hover:scale-[1.02] hover:border-indigo-600 hover:shadow-[0_0_24px_rgba(79,70,229,0.15)] transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <!-- Icon -->
+                        <div
+                            class="w-12 h-12 rounded-lg bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform">
+                            📱
+                        </div>
+                        <h3 class="heading-font text-xl font-bold text-zinc-50 mb-3">Instant Multi-Device Layouts</h3>
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Generate pixel-perfect mobile, tablet, and desktop layouts from a single prompt. No design
+                            experience required.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card B -->
+                <div
+                    class="dynamic-card-radius bg-zinc-900 border border-zinc-800 p-8 min-h-[280px] hover:scale-[1.02] hover:border-indigo-600 hover:shadow-[0_0_24px_rgba(79,70,229,0.15)] transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <!-- Icon -->
+                        <div
+                            class="w-12 h-12 rounded-lg bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform">
+                            🎨
+                        </div>
+                        <h3 class="heading-font text-xl font-bold text-zinc-50 mb-3">One-Click Figma Transfer</h3>
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Export to standard Figma layers, organized as autolayout components with proper naming
+                            conventions.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card C -->
+                <div
+                    class="dynamic-card-radius bg-zinc-900 border border-zinc-800 p-8 min-h-[280px] hover:scale-[1.02] hover:border-indigo-600 hover:shadow-[0_0_24px_rgba(79,70,229,0.15)] transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <!-- Icon -->
+                        <div
+                            class="w-12 h-12 rounded-lg bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform">
+                            ⚙️
+                        </div>
+                        <h3 class="heading-font text-xl font-bold text-zinc-50 mb-3">Wireframe Toggle Mode</h3>
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Switch between raw structural wireframes and finished styling instantly to focus on layout
+                            logic first.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card D -->
+                <div
+                    class="dynamic-card-radius bg-zinc-900 border border-zinc-800 p-8 min-h-[280px] hover:scale-[1.02] hover:border-indigo-600 hover:shadow-[0_0_24px_rgba(79,70,229,0.15)] transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <!-- Icon -->
+                        <div
+                            class="w-12 h-12 rounded-lg bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform">
+                            🚀
+                        </div>
+                        <h3 class="heading-font text-xl font-bold text-zinc-50 mb-3">Smart Design Systems</h3>
+                        <p class="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Automated color palette generation, UI scaling presets, and component extraction straight
+                            from your screens.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- [Section 6] Testimonial Showcase -->
+    <section class="py-24 relative z-10" id="testimonials">
+        <div class="max-w-4xl mx-auto px-6">
+            <div
+                class="dynamic-card-radius bg-zinc-900 border border-zinc-800 p-8 sm:p-16 relative overflow-hidden shadow-2xl">
+                <!-- Large Quote Element -->
+                <span
+                    class="editorial-font text-[120px] leading-none text-indigo-500 opacity-20 absolute -top-4 left-6 select-none">“</span>
+
+                <div class="relative z-10">
+                    <p class="editorial-font italic text-zinc-100 text-xl sm:text-3xl leading-[1.5] mb-8">
+                        "We skipped weeks of design back-and-forth and jumped straight into a seed-round demo. This tool
+                        is a literal cheat code for lean product teams."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-indigo-500/30 flex items-center justify-center font-bold text-indigo-300">
+                            AR</div>
+                        <div>
+                            <p class="text-zinc-50 font-semibold text-base leading-tight">— Alex R.</p>
+                            <p class="text-zinc-500 text-sm">Founder at Stealth AI</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- [Section 7] Pricing Tier Grid -->
+    <section class="py-24 bg-zinc-950/20 relative z-10" id="pricing">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="heading-font text-3xl sm:text-4xl font-bold text-zinc-50 tracking-tight mb-4">
+                    Pricing Plans Built for Speed
+                </h2>
+                <p class="text-zinc-400">
+                    Get started with our free community plan or unlock hyper-scale AI acceleration vectors.
+                </p>
+            </div>
+
+            <!-- Two-Column Comparative Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+
+                <!-- Tier 1: Founder -->
+                <div
+                    class="dynamic-card-radius bg-zinc-900 border border-zinc-800 p-8 sm:p-10 flex flex-col justify-between transition-all duration-200">
+                    <div>
+                        <!-- Header -->
+                        <div class="flex justify-between items-center mb-6">
+                            <span
+                                class="text-xs font-bold uppercase tracking-wider text-zinc-400 bg-zinc-800/60 px-3 py-1 rounded-full">Free
+                                Forever</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="heading-font text-5xl font-bold text-zinc-50">$0</span>
+                            <span class="text-zinc-500 text-sm">/month</span>
+                        </div>
+                        <p class="text-zinc-400 text-sm mb-8 leading-relaxed">
+                            Excellent for individual founders scoping early-stage landing pages or dynamic idea
+                            wireframes.
+                        </p>
+                        <!-- Divider -->
+                        <div class="border-t border-zinc-800/80 mb-8"></div>
+                        <!-- Features -->
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">5 monthly high-fidelity generations</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Standard UI assets library</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Basic Figma component exports</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Community support</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button onclick="simulateTierSignUp('Founder')"
+                        class="dynamic-button-radius w-full py-3.5 border border-zinc-700 hover:border-indigo-500 text-zinc-100 hover:text-white font-semibold hover:bg-indigo-600/10 text-center transition-all">
+                        Start Free
+                    </button>
+                </div>
+
+                <!-- Tier 2: Scale-Up [FEATURED] -->
+                <div
+                    class="dynamic-card-radius bg-zinc-900 border-2 border-indigo-500 p-8 sm:p-10 flex flex-col justify-between relative shadow-2xl transition-all duration-200">
+                    <!-- Badge -->
+                    <span
+                        class="absolute -top-3.5 right-6 bg-indigo-500 text-zinc-950 text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow">
+                        Most Popular
+                    </span>
+                    <div>
+                        <!-- Header -->
+                        <div class="flex justify-between items-center mb-6">
+                            <span
+                                class="text-xs font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full">Pro
+                                SaaS Acceleration</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="heading-font text-5xl font-bold text-zinc-50">$29</span>
+                            <span class="text-zinc-500 text-sm">/month • billed annually</span>
+                        </div>
+                        <p class="text-zinc-400 text-sm mb-8 leading-relaxed">
+                            For scaling tech startups, dev shops, and full product agencies requiring bulk Figma
+                            transitions.
+                        </p>
+                        <!-- Divider -->
+                        <div class="border-t border-zinc-800/80 mb-8"></div>
+                        <!-- Features -->
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Unlimited screen generations</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Deep design system code exports</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Priority fast-track AI generation queues</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Dedicated team library access</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Advanced component variations</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <span class="text-emerald-500 font-bold text-lg">✓</span>
+                                <span class="text-zinc-300 text-sm">Priority email support</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button onclick="simulateTierSignUp('Scale-Up')"
+                        class="dynamic-button-radius w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-center shadow-lg shadow-indigo-600/30 transition-all">
+                        Start 14-Day Trial
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- [Section 8] FAQ Accordion -->
+    <section class="py-24 relative z-10" id="faq">
+        <div class="max-w-3xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="heading-font text-3xl sm:text-4xl font-bold text-zinc-50 tracking-tight mb-4">
+                    Frequently Asked Questions
+                </h2>
+                <p class="text-zinc-400">
+                    Everything you need to know about design systems, native output configurations, and the engine.
+                </p>
+            </div>
+
+            <!-- Accordion Wrapper -->
+            <div class="border-t border-zinc-800/80 divide-y divide-zinc-800/80">
+
+                <!-- Q1 -->
+                <div class="accordion-item py-6 transition-all duration-200" id="faq-1">
+                    <button onclick="toggleFaq('faq-1')"
+                        class="w-full flex justify-between items-center text-left focus:outline-none">
+                        <span
+                            class="heading-font text-base sm:text-lg font-semibold text-zinc-100 hover:text-indigo-400 transition-colors">How
+                            clean is the exported code/Figma file?</span>
+                        <span
+                            class="chevron w-6 h-6 flex items-center justify-center text-zinc-500 transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="pt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Extremely clean. Your layouts export with standard modern naming conventions, fully
+                            structured variables, and native autolayout structures. Every component follows industry
+                            best practices and is ready for immediate handoff to developers.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="accordion-item py-6 transition-all duration-200" id="faq-2">
+                    <button onclick="toggleFaq('faq-2')"
+                        class="w-full flex justify-between items-center text-left focus:outline-none">
+                        <span
+                            class="heading-font text-base sm:text-lg font-semibold text-zinc-100 hover:text-indigo-400 transition-colors">Can
+                            I use these generated layouts commercially?</span>
+                        <span
+                            class="chevron w-6 h-6 flex items-center justify-center text-zinc-500 transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="pt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Absolutely. Everything generated belongs entirely to your company or client brief with zero
+                            licensing restrictions. Full commercial rights are included with every plan.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="accordion-item py-6 transition-all duration-200" id="faq-3">
+                    <button onclick="toggleFaq('faq-3')"
+                        class="w-full flex justify-between items-center text-left focus:outline-none">
+                        <span
+                            class="heading-font text-base sm:text-lg font-semibold text-zinc-100 hover:text-indigo-400 transition-colors">What
+                            if the AI doesn't understand my prompt?</span>
+                        <span
+                            class="chevron w-6 h-6 flex items-center justify-center text-zinc-500 transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="pt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Our AI is trained on thousands of real design briefs and UI patterns. If a generation
+                            doesn't match your vision, you can refine your prompt or use our guided prompt builder.
+                            Plus, every generation is editable before export.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="accordion-item py-6 transition-all duration-200" id="faq-4">
+                    <button onclick="toggleFaq('faq-4')"
+                        class="w-full flex justify-between items-center text-left focus:outline-none">
+                        <span
+                            class="heading-font text-base sm:text-lg font-semibold text-zinc-100 hover:text-indigo-400 transition-colors">Do
+                            I need design experience to use this?</span>
+                        <span
+                            class="chevron w-6 h-6 flex items-center justify-center text-zinc-500 transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="pt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            Not at all. DesignAI is built specifically for non-designers. If you can describe what you
+                            want in plain English, you can generate professional UI. Many of our users are technical
+                            founders with zero design background.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="accordion-item py-6 transition-all duration-200" id="faq-5">
+                    <button onclick="toggleFaq('faq-5')"
+                        class="w-full flex justify-between items-center text-left focus:outline-none">
+                        <span
+                            class="heading-font text-base sm:text-lg font-semibold text-zinc-100 hover:text-indigo-400 transition-colors">How
+                            does the Figma export work technically?</span>
+                        <span
+                            class="chevron w-6 h-6 flex items-center justify-center text-zinc-500 transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="pt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            We use Figma's official API to create native files with proper autolayout, components, and
+                            design tokens. Everything appears in your Figma account as if you built it manually, with
+                            clean layer names and logical grouping.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="accordion-item py-6 transition-all duration-200" id="faq-6">
+                    <button onclick="toggleFaq('faq-6')"
+                        class="w-full flex justify-between items-center text-left focus:outline-none">
+                        <span
+                            class="heading-font text-base sm:text-lg font-semibold text-zinc-100 hover:text-indigo-400 transition-colors">What
+                            happens if I hit my generation limit?</span>
+                        <span
+                            class="chevron w-6 h-6 flex items-center justify-center text-zinc-500 transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="pt-4 text-zinc-400 text-sm sm:text-base leading-relaxed">
+                            On the free plan, your limit resets monthly. You'll receive a notification at 80% usage. You
+                            can upgrade anytime mid-month, and unused generations roll over for 30 days on paid plans.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- [Section 9] CTA Banner -->
+    <section class="py-24 relative z-10 border-t border-zinc-800 bg-zinc-950/20" id="cta-banner">
+        <!-- Radial glow backdrops -->
+        <div
+            class="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.1)_0%,transparent_60%)]">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+            <h2
+                class="heading-font text-3xl sm:text-4xl lg:text-5xl font-bold text-zinc-50 tracking-tight max-w-3xl mx-auto mb-6">
+                Ready to accelerate your launch timeline?
+            </h2>
+            <p class="text-zinc-400 text-lg mb-10">
+                Join 12,000+ founders shipping products faster.
+            </p>
+            <a href="#hero"
+                class="dynamic-button-radius inline-flex items-center justify-center text-lg font-semibold bg-indigo-600 hover:bg-indigo-500 hover:scale-[1.03] text-white px-8 py-4 shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all duration-200 active:scale-95">
+                Start Designing for Free
+            </a>
+        </div>
+    </section>
+
+    <!-- [Section 10] Newsletter Form -->
+    <section class="py-16 bg-zinc-900/40 border-t border-zinc-800/60 relative z-10" id="newsletter">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h3 class="text-zinc-200 text-lg sm:text-xl font-semibold mb-6">
+                Get weekly micro-layouts and minimalist UI design prompts in your inbox.
+            </h3>
+
+            <!-- Subscription Content State Container -->
+            <div id="newsletter-state-container" class="max-w-lg mx-auto">
+                <form id="newsletter-form" onsubmit="handleNewsletterSubmit(event)"
+                    class="flex flex-col sm:flex-row gap-3 bg-zinc-900 border border-zinc-800 p-2 rounded-xl focus-within:border-indigo-500 transition-all">
+                    <input id="newsletter-email" type="email" required placeholder="your@startup.com"
+                        class="flex-1 bg-transparent pl-3 pr-2 py-3 text-zinc-100 placeholder-zinc-500 text-sm focus:outline-none">
+                    <button type="submit" id="newsletter-submit-btn"
+                        class="dynamic-button-radius bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm px-6 py-3 transition-colors flex items-center justify-center gap-2">
+                        <span>Subscribe</span>
+                    </button>
+                </form>
+                <p id="newsletter-error-feedback"
+                    class="hidden text-errorState text-xs font-semibold text-left mt-2 pl-3"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- [Section 11] Footer -->
+    <footer class="py-16 bg-zinc-950 border-t border-zinc-800/80 relative z-10" id="site-footer">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <!-- 4-Column Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+                <!-- Col 1 -->
+                <div>
+                    <h4 class="text-zinc-100 text-sm font-bold tracking-wider uppercase mb-4">Product</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#features"
+                                class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Features</a></li>
+                        <li><a href="#pricing"
+                                class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Pricing</a></li>
+                        <li><a href="#how-it-works"
+                                class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Integrations</a>
+                        </li>
+                        <li><a href="#"
+                                class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 2 -->
+                <div>
+                    <h4 class="text-zinc-100 text-sm font-bold tracking-wider uppercase mb-4">Resources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#"
+                                class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Documentation</a>
+                        </li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Design
+                                Guide</a></li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Blog</a>
+                        </li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Case
+                                Studies</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3 -->
+                <div>
+                    <h4 class="text-zinc-100 text-sm font-bold tracking-wider uppercase mb-4">Company</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">About Us</a>
+                        </li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Careers</a>
+                        </li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Brand
+                                Kit</a></li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Col 4 -->
+                <div>
+                    <h4 class="text-zinc-100 text-sm font-bold tracking-wider uppercase mb-4">Legal</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Privacy
+                                Policy</a></li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Terms of
+                                Service</a></li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Cookie
+                                Policy</a></li>
+                        <li><a href="#" class="text-zinc-400 hover:text-zinc-100 text-sm transition-colors">Security</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Bottom Ribbon -->
+            <div class="border-t border-zinc-800/80 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                    <span>© 2026 DesignAI Inc. All rights reserved.</span>
+                </div>
+
+                <!-- Social Icons -->
+                <div class="flex items-center space-x-6 text-zinc-400">
+                    <a href="#" class="hover:text-zinc-50 transition-colors" aria-label="Twitter">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="hover:text-zinc-50 transition-colors" aria-label="LinkedIn">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="hover:text-zinc-50 transition-colors" aria-label="GitHub">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Store current active theme and styling configurations
+        let currentConcept = 'A';
+        let currentAccentColor = '#4F46E5';
+        let currentRadiusValue = '16px';
+
+        // Initialize grid backgrounds on window load
+        window.onload = function () {
+            setConcept('A'); // Set up default Design Concept
+        };
+
+        // -------------------------------------------------------------------------
+        // Core Concept Toggling (Explore 2 Ideas)
+        // -------------------------------------------------------------------------
+        function setConcept(concept) {
+            currentConcept = concept;
+            const btnA = document.getElementById('btnConceptA');
+            const btnB = document.getElementById('btnConceptB');
+            const sandboxControls = document.getElementById('sandboxControls');
+            const bgGrid = document.getElementById('hero-background-grid');
+
+            if (concept === 'A') {
+                // Concept A: Minimalist, clean tech
+                btnA.className = "text-xs py-2 px-3 rounded-lg font-medium border border-indigo-500 bg-indigo-600 text-white transition-all duration-200 shadow-md";
+                btnB.className = "text-xs py-2 px-3 rounded-lg font-medium border border-zinc-800 bg-zinc-800 text-zinc-300 hover:text-white transition-all duration-200";
+
+                sandboxControls.classList.add('hidden');
+                bgGrid.className = "absolute inset-0 z-0 pointer-events-none opacity-40";
+                bgGrid.style.backgroundImage = 'none';
+
+                // Reset accents to modern indigo
+                applyThemeChanges('#4F46E5', '16px');
+            } else {
+                // Concept B: Vibrant, customisable interactive sandbox with grid pattern
+                btnB.className = "text-xs py-2 px-3 rounded-lg font-medium border border-indigo-500 bg-indigo-600 text-white transition-all duration-200 shadow-md";
+                btnA.className = "text-xs py-2 px-3 rounded-lg font-medium border border-zinc-800 bg-zinc-800 text-zinc-300 hover:text-white transition-all duration-200";
+
+                sandboxControls.classList.remove('hidden');
+                bgGrid.className = "absolute inset-0 z-0 pointer-events-none opacity-40 cyber-grid";
+
+                // Initialize with slider values
+                const accentIndex = document.getElementById('accentSlider').value;
+                const radiusVal = document.getElementById('radiusSlider').value;
+                changeAccent(accentIndex);
+                changeRadius(radiusVal);
+            }
+        }
+
+        function changeAccent(val) {
+            const label = document.getElementById('accentVal');
+            let hex = '#4F46E5';
+            if (val == 1) {
+                hex = '#4F46E5'; // Indigo
+                label.innerText = 'Indigo';
+            } else if (val == 2) {
+                hex = '#10B981'; // Mint Green
+                label.innerText = 'Emerald';
+            } else if (val == 3) {
+                hex = '#D946EF'; // Neon Magenta
+                label.innerText = 'Fuchsia';
+            } else if (val == 4) {
+                hex = '#3B82F6'; // Tech Blue
+                label.innerText = 'Electric Blue';
+            }
+            currentAccentColor = hex;
+            applyThemeChanges(hex, currentRadiusValue);
+        }
+
+        function changeRadius(val) {
+            const label = document.getElementById('radiusVal');
+            label.innerText = val + 'px';
+            currentRadiusValue = val + 'px';
+            applyThemeChanges(currentAccentColor, currentRadiusValue);
+        }
+
+        function applyThemeChanges(colorHex, radiusStr) {
+            // Update CSS variables/Tailwind values on interactive components
+            const primaryAccentElements = document.querySelectorAll('.text-indigo-500, .text-indigo-400');
+            primaryAccentElements.forEach(el => {
+                el.style.color = colorHex;
+            });
+
+            // Update Dynamic Border Radiuses
+            const cardElements = document.querySelectorAll('.dynamic-card-radius');
+            cardElements.forEach(el => {
+                el.style.borderRadius = radiusStr;
+            });
+
+            const buttonElements = document.querySelectorAll('.dynamic-button-radius');
+            buttonElements.forEach(el => {
+                el.style.borderRadius = `calc(${radiusStr} / 1.3)`;
+            });
+
+            // Update solid accent backgrounds
+            const bgAccentElements = document.querySelectorAll('.bg-indigo-600');
+            bgAccentElements.forEach(el => {
+                el.style.backgroundColor = colorHex;
+            });
+
+            const borderAccentElements = document.querySelectorAll('.border-indigo-500');
+            borderAccentElements.forEach(el => {
+                el.style.borderColor = colorHex;
+            });
+        }
+
+        // -------------------------------------------------------------------------
+        // Navigation & Hamburger Menu Toggle
+        // -------------------------------------------------------------------------
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = document.getElementById('hamburger-icon');
+            menu.classList.toggle('hidden');
+            if (menu.classList.contains('hidden')) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>';
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Prompt Length Character Counter
+        // -------------------------------------------------------------------------
+        function updatePromptCharLimit() {
+            const input = document.getElementById('prompt-input');
+            const counter = document.getElementById('char-counter');
+            const val = input.value;
+            counter.innerText = `${val.length} / 500 characters`;
+
+            // Clear validation warning instantly when text begins typing
+            if (val.length >= 10) {
+                document.getElementById('prompt-validation-feedback').innerText = "";
+                document.getElementById('prompt-container').classList.remove('shake-element');
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Hero AI Generation Engine simulation
+        // -------------------------------------------------------------------------
+        function triggerSimulatedGeneration() {
+            const input = document.getElementById('prompt-input');
+            const promptVal = input.value.trim();
+            const validationFeedback = document.getElementById('prompt-validation-feedback');
+            const container = document.getElementById('prompt-container');
+
+            // 1. Validation Logic
+            if (promptVal.length < 10) {
+                validationFeedback.innerText = "Please describe your UI in more detail (min 10 characters)";
+                container.classList.add('shake-element');
+                // Remove shake after animation completes to allow re-trigger
+                setTimeout(() => {
+                    container.classList.remove('shake-element');
+                }, 400);
+                return;
+            }
+
+            validationFeedback.innerText = "";
+
+            // Hide previous results
+            document.getElementById('generation-result').classList.add('hidden');
+
+            // Show simulated generator step transitions
+            const loader = document.getElementById('generation-loader');
+            const textStage = document.getElementById('generation-stage-text');
+            loader.classList.remove('hidden');
+
+            const stages = [
+                "Analyzing your brief...",
+                "Assembling layout components...",
+                "Applying design system...",
+                "Finalizing UI structure..."
+            ];
+
+            let stageIndex = 0;
+            const stageInterval = setInterval(() => {
+                stageIndex++;
+                if (stageIndex < stages.length) {
+                    textStage.innerText = stages[stageIndex];
+                } else {
+                    clearInterval(stageInterval);
+                    // Hide loader and show success UI layout
+                    loader.classList.add('hidden');
+
+                    // Customize generated dashboard Title text dynamically based on prompt
+                    const words = promptVal.split(' ');
+                    const keyword = words.length > 2 ? words[1] + " " + words[2] : "SaaS";
+                    document.getElementById('result-dashboard-title').innerText = `Your Generated ${keyword} Layout`;
+
+                    const resultBlock = document.getElementById('generation-result');
+                    resultBlock.classList.remove('hidden');
+                    // Ensure theme variables align to current visual settings
+                    applyThemeChanges(currentAccentColor, currentRadiusValue);
+                }
+            }, 700);
+        }
+
+        function setPreviewStyle(mode) {
+            const btnWireframe = document.getElementById('btn-preview-wireframe');
+            const btnStyled = document.getElementById('btn-preview-styled');
+            const mockupStyled = document.getElementById('mockup-styled');
+            const mockupWireframe = document.getElementById('mockup-wireframe');
+
+            if (mode === 'wireframe') {
+                btnWireframe.className = "px-3 py-1.5 rounded-md font-medium bg-zinc-800 text-white shadow";
+                btnStyled.className = "px-3 py-1.5 rounded-md font-medium text-zinc-400 hover:text-zinc-50 transition-colors";
+                mockupStyled.classList.add('hidden');
+                mockupWireframe.classList.remove('hidden');
+            } else {
+                btnStyled.className = "px-3 py-1.5 rounded-md font-medium bg-indigo-600 text-white shadow";
+                btnWireframe.className = "px-3 py-1.5 rounded-md font-medium text-zinc-400 hover:text-zinc-50 transition-colors";
+                mockupWireframe.classList.add('hidden');
+                mockupStyled.classList.remove('hidden');
+            }
+        }
+
+        function resetGenerationPrompt() {
+            document.getElementById('prompt-input').value = "";
+            document.getElementById('char-counter').innerText = "0 / 500 characters";
+            document.getElementById('generation-result').classList.add('hidden');
+        }
+
+        function mockFigmaExport() {
+            // Using standard alert alternative toast to avoid window.alert block
+            const toast = document.createElement('div');
+            toast.className = "fixed top-24 right-6 bg-zinc-900 border border-indigo-500 text-zinc-100 px-6 py-4 rounded-xl shadow-2xl z-50 flex items-center gap-3 animate-slideIn";
+            toast.innerHTML = `<span class="text-indigo-400 font-bold">❖</span> <span>Successfully exported structured Figma tokens directly to your clipboard!</span>`;
+            document.body.appendChild(toast);
+
+            // Mock Copying design JSON to clipboard safely via standard input backup
+            const dummy = document.createElement("input");
+            document.body.appendChild(dummy);
+            dummy.value = '{"theme": "DesignAI", "generatedToken": "38a9fd-932c-ff03"}';
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        // -------------------------------------------------------------------------
+        // How It Works Step Interaction Mockups
+        // -------------------------------------------------------------------------
+        function selectStepVisual(activeNum) {
+            for (let i = 1; i <= 3; i++) {
+                const badge = document.getElementById(`step-badge-${i}`);
+                if (i === activeNum) {
+                    badge.className = "w-16 h-16 rounded-full bg-indigo-600 border border-indigo-400 flex items-center justify-center heading-font font-bold text-zinc-50 text-xl shadow-lg shadow-indigo-600/30 transition-all duration-300";
+                } else {
+                    badge.className = "w-16 h-16 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center heading-font font-bold text-zinc-300 text-xl shadow-lg transition-all duration-300";
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Pricing Plan Simulated Toggling/Signup
+        // -------------------------------------------------------------------------
+        function simulateTierSignUp(tierName) {
+            const toast = document.createElement('div');
+            toast.className = "fixed top-24 right-6 bg-zinc-900 border border-indigo-500 text-zinc-100 px-6 py-4 rounded-xl shadow-2xl z-50 flex items-center gap-3 animate-slideIn";
+            toast.innerHTML = `<span>⚡ Opening signup workflow for <strong>${tierName} Plan</strong>...</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        // -------------------------------------------------------------------------
+        // FAQ Accordion Mechanics
+        // -------------------------------------------------------------------------
+        function toggleFaq(selectedId) {
+            const items = document.querySelectorAll('.accordion-item');
+            items.forEach(item => {
+                const content = item.querySelector('.accordion-content');
+                const chevron = item.querySelector('.chevron');
+                const questionText = item.querySelector('.heading-font');
+
+                if (item.id === selectedId) {
+                    const isActive = item.classList.contains('accordion-active');
+                    if (isActive) {
+                        item.classList.remove('accordion-active');
+                        chevron.style.transform = 'rotate(0deg)';
+                        questionText.style.color = '#FAFAFA';
+                    } else {
+                        item.classList.add('accordion-active');
+                        chevron.style.transform = 'rotate(180deg)';
+                        questionText.style.color = currentAccentColor;
+                    }
+                } else {
+                    item.classList.remove('accordion-active');
+                    chevron.style.transform = 'rotate(0deg)';
+                    questionText.style.color = '#FAFAFA';
+                }
+            });
+        }
+
+        // -------------------------------------------------------------------------
+        // Newsletter Subscription form validation and state switching
+        // -------------------------------------------------------------------------
+        function handleNewsletterSubmit(event) {
+            event.preventDefault();
+            const input = document.getElementById('newsletter-email');
+            const email = input.value.trim();
+            const errorFeedback = document.getElementById('newsletter-error-feedback');
+            const submitBtn = document.getElementById('newsletter-submit-btn');
+
+            // Quick Regex validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorFeedback.innerText = "Please enter a valid email address.";
+                errorFeedback.classList.remove('hidden');
+                return;
+            }
+
+            errorFeedback.classList.add('hidden');
+
+            // Set Loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Subscribing...</span>
+            `;
+
+            // Mock Simulated Response Delay
+            setTimeout(() => {
+                const container = document.getElementById('newsletter-state-container');
+                container.innerHTML = `
+                    <div class="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center">
+                        <p class="text-emerald-400 font-bold text-sm">✓ You're subscribed! Check your inbox for a welcome gift.</p>
+                    </div>
+                `;
+            }, 1500);
+        }
+    </script>
+</body>
+
+</html>
